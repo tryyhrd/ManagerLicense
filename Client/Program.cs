@@ -38,11 +38,11 @@ namespace Client
                 File.Delete(Directory.GetCurrentDirectory() + "/.config");
                 OnSettings();
             }
-            else if (Command == "connect")
+            else if (Command == "/connect")
                 ConnectServer();
-            else if (Command == "status")
+            else if (Command == "/status")
                 GetStatus();
-            else if (Command == "help")
+            else if (Command == "/help")
                 Help();
         }
 
@@ -54,9 +54,18 @@ namespace Client
                 SocketType.Stream, 
                 ProtocolType.Tcp);
 
+            try {
+                socket.Connect(endPoint);
+            }
+            catch(Exception exp) {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Error: " + exp.Message);
+            }
+
             if (socket.Connected)
             {
 
+                Console.ForegroundColor = ConsoleColor.Green;
                 socket.Send(Encoding.UTF8.GetBytes("/token"));
 
                 byte[] Bytes = new byte[1048 * 1048];
@@ -73,7 +82,7 @@ namespace Client
                     ClientToken = Response; 
                     ClientDataConnection = DateTime.Now;
 
-                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Recieved connection token: " + ClientToken);
                 }
             }
@@ -85,7 +94,7 @@ namespace Client
             {
                 Thread.Sleep(1000);
 
-                if (ClientToken != "")
+                if (!String.IsNullOrEmpty(ClientToken))
                 {
                     IPEndPoint endPoint = new IPEndPoint(ServerIpAddress, ServerPort);
                     Socket socket = new Socket(
@@ -105,7 +114,7 @@ namespace Client
 
                     if (socket.Connected)
                     {
-                        socket.Send(Encoding.UTF8.GetBytes("/token"));
+                        socket.Send(Encoding.UTF8.GetBytes(ClientToken));
 
                         byte[] Bytes = new byte[1048 * 1048];
                         int BytesRec = socket.Receive(Bytes);
@@ -125,7 +134,7 @@ namespace Client
         static void Help()
         {
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("Commands to the server: ");
+            Console.WriteLine("Commands to the clients: ");
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("/config");
@@ -161,6 +170,8 @@ namespace Client
             {
                 StreamReader streamReader = new StreamReader(Path);
                 IpAddress = streamReader.ReadLine();
+
+
                 ServerIpAddress = IPAddress.Parse(IpAddress);
                 ServerPort = int.Parse(streamReader.ReadLine());
                 streamReader.Close();
