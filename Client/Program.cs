@@ -51,20 +51,21 @@ namespace Client
             IPEndPoint endPoint = new IPEndPoint(ServerIpAddress, ServerPort);
             Socket socket = new Socket(
                 AddressFamily.InterNetwork,
-                SocketType.Stream, 
+                SocketType.Stream,
                 ProtocolType.Tcp);
 
-            try {
+            try
+            {
                 socket.Connect(endPoint);
             }
-            catch(Exception exp) {
+            catch (Exception exp)
+            {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Error: " + exp.Message);
             }
 
             if (socket.Connected)
             {
-
                 Console.ForegroundColor = ConsoleColor.Green;
                 socket.Send(Encoding.UTF8.GetBytes("/token"));
 
@@ -77,9 +78,14 @@ namespace Client
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("There is not enough space on the license server");
                 }
+                else if (Response == "/blacklisted")
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Access denied: Your token is in blacklist");
+                }
                 else
                 {
-                    ClientToken = Response; 
+                    ClientToken = Response;
                     ClientDataConnection = DateTime.Now;
 
                     Console.ForegroundColor = ConsoleColor.Green;
@@ -120,7 +126,7 @@ namespace Client
                         int BytesRec = socket.Receive(Bytes);
 
                         string Response = Encoding.UTF8.GetString(Bytes, 0, BytesRec);
-                        if (Response == "/disconnect")
+                        if (Response == "/disconnect" || Response == "/blacklisted")
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine("There client is disconnected from server");
