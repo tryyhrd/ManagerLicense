@@ -11,5 +11,6 @@ namespace Server.Classes
         public string Password { get; set; }
         public string Token { get; set; }
         public DateTime? DateConnect { get; set; }
+        public bool IsBlackListed { get; set; }
     }
 }

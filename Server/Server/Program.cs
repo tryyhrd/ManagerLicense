@@ -35,13 +35,16 @@ namespace Server
             }
         }
 
-        static string GenerateStaticToken(string ipAddress)
+        static string GenerateStaticToken()
         {
-            using (SHA256 sha256 = SHA256.Create())
+            string guid = Guid.NewGuid().ToString("N");
+
+            if (guid.Length > 12)
             {
-                byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(ipAddress + "salt"));
-                return BitConverter.ToString(hash).Replace("-", "").Substring(0, 15);
+                guid = guid.Substring(0, 12);
             }
+
+            return guid;
         }
 
         static void LoadBlackList()
@@ -74,16 +77,28 @@ namespace Server
 
         static string SetCommandClient(string command, string clientIP)
         {
-            if (command == "/token")
+            string[] cmd = command.Split(' ');
+            if (cmd[0] == "/token")
             {
-                string staticToken = GenerateStaticToken(clientIP);
-
-                if (IsInBlackList(staticToken))
+                using (var db = new DBContext())
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"IP {clientIP} (token: {staticToken}) is blacklisted - connection rejected");
-                    return "/blacklisted";
+                    string pwd = cmd[2];
+                    string login = cmd[1];
+
+                    if (db.Clients.Any(x => x.Login == login && x.Password == pwd))
+                    {
+                        var token = db.Clients.FirstOrDefault(x => x.Login == login && x.Password == pwd).Token;
+
+                        if (IsInBlackList(token))
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine($"IP {clientIP} token {token} is blacklisted - connection rejected");
+                            return "/blacklisted";
+                        }
+                    }
                 }
+
+                string staticToken = GenerateStaticToken();
 
                 if (AllClients.Count < MaxClient)
                 {

@@ -92,7 +92,7 @@ namespace Client
             if (socket.Connected)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                socket.Send(Encoding.UTF8.GetBytes("/token"));
+                socket.Send(Encoding.UTF8.GetBytes($"/token {login} {password}"));
 
                 byte[] Bytes = new byte[1048 * 1048];
                 int BytesRec = socket.Receive(Bytes);
