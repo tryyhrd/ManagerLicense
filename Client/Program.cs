@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Data.Entity;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Server.Classes;
 
 namespace Client
 {
@@ -38,12 +41,34 @@ namespace Client
                 File.Delete(Directory.GetCurrentDirectory() + "/.config");
                 OnSettings();
             }
-            else if (Command == "/connect")
-                ConnectServer();
-            else if (Command == "/status")
+
+            string[] com = Command.Split(' ');
+
+            if (com.Length > 1)
+            {
+                if (com[0] == "/connect")
+                {
+                    using (var db = new DBContext())
+                    {
+                        string login = com[1];
+                        string password = com[2];
+                        if (db.Clients.Any(x => x.Login == login && x.Password == password))
+                        {
+                            ConnectServer();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Не правильный логин или пароль");
+                        }
+                    }
+                }
+                
+            }
+             else if (Command == "/status")
                 GetStatus();
             else if (Command == "/help")
                 Help();
+            
         }
 
         static void ConnectServer()

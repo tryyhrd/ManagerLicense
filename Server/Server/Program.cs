@@ -134,7 +134,7 @@ namespace Server
             {
                 for (int iClient = 0; iClient < AllClients.Count; iClient++)
                 {
-                    int ClientDuration = (int)DateTime.Now.Subtract(AllClients[iClient].DateConnect).TotalSeconds;
+                    int ClientDuration = (int)DateTime.Now.Subtract((DateTime)AllClients[iClient].DateConnect).TotalSeconds;
                     if (ClientDuration > Duration)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -214,9 +214,10 @@ namespace Server
             Console.WriteLine($"Count clients: {AllClients.Count}");
             foreach (Classes.Client client in AllClients)
             {
-                int duration = (int)DateTime.Now.Subtract(client.DateConnect).TotalSeconds;
+                int duration = (int)DateTime.Now.Subtract((DateTime)client.DateConnect).TotalSeconds;
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine($"Client: {client.Token}, time connection: {client.DateConnect.ToString("HH:mm:ss dd.MM")}, duration: {duration}");
+                string formattedDate = ((DateTime)client.DateConnect).ToString("HH:mm:ss dd.MM");
+                Console.WriteLine($"Client: {client.Token}, time connection: {formattedDate}, duration: {duration}");
             }
         }
 
