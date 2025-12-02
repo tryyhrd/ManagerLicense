@@ -54,7 +54,7 @@ namespace Client
                         string password = com[2];
                         if (db.Clients.Any(x => x.Login == login && x.Password == password))
                         {
-                            ConnectServer();
+                            ConnectServer(password, login);
                         }
                         else
                         {
@@ -71,7 +71,7 @@ namespace Client
             
         }
 
-        static void ConnectServer()
+        static void ConnectServer(string password, string login)
         {
             IPEndPoint endPoint = new IPEndPoint(ServerIpAddress, ServerPort);
             Socket socket = new Socket(
@@ -112,6 +112,15 @@ namespace Client
                 {
                     ClientToken = Response;
                     ClientDataConnection = DateTime.Now;
+
+                    using (var db = new DBContext())
+                    {
+                        var user = db.Clients.FirstOrDefault(x => x.Login == login && x.Password == password);
+                        user.Token = ClientToken;
+                        user.DateConnect = DateTime.Now;
+
+                        db.SaveChanges();
+                    }
 
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Recieved connection token: " + ClientToken);
